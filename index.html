@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HTML 可视化编辑器</title>
+<title data-i18n="appTitle">HTML 可视化编辑器</title>
 <!-- <link rel="icon" href="https://app.grapesjs.com/docs-sdk/img/favicon.ico">
 <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.23.5/dist/css/grapes.min.css">
 <script src="https://unpkg.com/grapesjs@0.23.5/dist/grapes.min.js"></script> -->
@@ -58,6 +58,7 @@
   #top-bar select option { background:#232a38; color:#e8eaf0; }
   .icon-btn { width:36px; height:36px; justify-content:center; padding:0; margin-left:auto; }
   .icon-btn svg { width:18px; height:18px; }
+  .language-select { min-width:80px; }
   #app { display:flex; height: calc(100vh - 52px); }
   /* 侧边栏保持 GrapesJS 原生深色皮肤的底色，避免内部图层/样式文字（浅色字）与自定义浅色背景对比度过低 */
   .side-panel {
@@ -132,22 +133,23 @@
 <div id="top-bar">
   <div class="brand">
     <div class="logo">H</div>
-    <span>HTML 可视化编辑器</span>
+    <span data-i18n="appTitle">HTML 可视化编辑器</span>
   </div>
-  <button class="tb-btn" id="btnNew">新建</button>
-  <button class="tb-btn" id="btnImport">导入</button>
-  <button class="tb-btn primary" id="btnExport">导出 HTML</button>
-  <button class="tb-btn" id="btnPreview">预览</button>
-  <button class="tb-btn" id="btnViewCode">查看代码</button>
+  <button class="tb-btn" id="btnNew" data-i18n="new">新建</button>
+  <button class="tb-btn" id="btnImport" data-i18n="import">导入</button>
+  <button class="tb-btn primary" id="btnExport" data-i18n="exportHtml">导出 HTML</button>
+  <button class="tb-btn" id="btnPreview" data-i18n="preview">预览</button>
+  <button class="tb-btn" id="btnViewCode" data-i18n="viewCode">查看代码</button>
   <div class="sep"></div>
-  <button class="tb-btn" id="btnUndo">撤销</button>
-  <button class="tb-btn" id="btnRedo">重做</button>
+  <button class="tb-btn" id="btnUndo" data-i18n="undo">撤销</button>
+  <button class="tb-btn" id="btnRedo" data-i18n="redo">重做</button>
   <div class="sep"></div>
   <select id="deviceSelect">
-    <option value="Desktop">桌面</option>
-    <option value="Tablet">平板</option>
-    <option value="Mobile">手机</option>
+    <option value="Desktop" data-i18n="desktop">桌面</option>
+    <option value="Tablet" data-i18n="tablet">平板</option>
+    <option value="Mobile" data-i18n="mobile">手机</option>
   </select>
+  <select id="languageSelect" class="language-select" aria-label="选择语言"></select>
   <button class="tb-btn icon-btn" id="btnToggleBlocks" title="显示组件库" aria-label="显示组件库" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/>
@@ -166,56 +168,56 @@
             <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/>
           </svg>
         </div>
-        <h2>开始创建或导入页面</h2>
-        <p>点击右上角组件库按钮选择组件，拖入此区域开始编辑。</p>
+        <h2 data-i18n="emptyTitle">开始创建或导入页面</h2>
+        <p data-i18n="emptyHint">点击右上角组件库按钮选择组件，拖入此区域开始编辑。</p>
       </div>
     </div>
   </div>
 
   <div id="right-panel" class="side-panel">
     <div class="tabs">
-      <button class="tab-btn active" data-tab="styles">样式</button>
-      <button class="tab-btn" data-tab="layers">图层</button>
-      <button class="tab-btn" data-tab="traits">属性</button>
-      <button class="tab-btn" data-tab="table">表格</button>
+      <button class="tab-btn active" data-tab="styles" data-i18n="styles">样式</button>
+      <button class="tab-btn" data-tab="layers" data-i18n="layers">图层</button>
+      <button class="tab-btn" data-tab="traits" data-i18n="traits">属性</button>
+      <button class="tab-btn" data-tab="table" data-i18n="table">表格</button>
     </div>
     <div class="tab-pane active" id="pane-styles"><div id="selectorPanel"></div><div id="stylesPanel"></div></div>
     <div class="tab-pane" id="pane-layers"><div id="layersPanel"></div></div>
     <div class="tab-pane" id="pane-traits"><div id="traitsPanel"></div></div>
     <div class="tab-pane" id="pane-table">
       <div id="tablePanel">
-        <div id="tableEmptyHint">请在画布中选中一个表格单元格（td / th）以使用表格工具。</div>
+        <div id="tableEmptyHint" data-i18n="tableEmptyHint">请在画布中选中一个表格单元格（td / th）以使用表格工具。</div>
         <div id="tableToolsBody" style="display:none;">
-          <div id="multiSelectInfo">未选择合并目标（按住 Ctrl 并点击多个单元格可多选）</div>
+          <div id="multiSelectInfo" data-i18n="multiSelectEmpty">未选择合并目标（按住 Ctrl 并点击多个单元格可多选）</div>
 
           <div class="table-tool-group">
-            <h4>行操作</h4>
+            <h4 data-i18n="rowOperations">行操作</h4>
             <div class="table-tool-row">
-              <button class="table-tool-btn" id="btnRowAbove">上方插入行</button>
-              <button class="table-tool-btn" id="btnRowBelow">下方插入行</button>
+              <button class="table-tool-btn" id="btnRowAbove" data-i18n="insertRowAbove">上方插入行</button>
+              <button class="table-tool-btn" id="btnRowBelow" data-i18n="insertRowBelow">下方插入行</button>
             </div>
-            <button class="table-tool-btn" id="btnDeleteRow">删除当前行</button>
+            <button class="table-tool-btn" id="btnDeleteRow" data-i18n="deleteRow">删除当前行</button>
           </div>
 
           <div class="table-tool-group">
-            <h4>列操作</h4>
+            <h4 data-i18n="columnOperations">列操作</h4>
             <div class="table-tool-row">
-              <button class="table-tool-btn" id="btnColLeft">左侧插入列</button>
-              <button class="table-tool-btn" id="btnColRight">右侧插入列</button>
+              <button class="table-tool-btn" id="btnColLeft" data-i18n="insertColumnLeft">左侧插入列</button>
+              <button class="table-tool-btn" id="btnColRight" data-i18n="insertColumnRight">右侧插入列</button>
             </div>
-            <button class="table-tool-btn" id="btnDeleteCol">删除当前列</button>
+            <button class="table-tool-btn" id="btnDeleteCol" data-i18n="deleteColumn">删除当前列</button>
           </div>
 
           <div class="table-tool-group">
-            <h4>合并 / 拆分</h4>
-            <button class="table-tool-btn" id="btnMergeCells" disabled>合并选中单元格</button>
-            <button class="table-tool-btn" id="btnSplitCell">拆分当前单元格</button>
-            <button class="table-tool-btn" id="btnClearSelect">清除多选</button>
+            <h4 data-i18n="mergeSplit">合并 / 拆分</h4>
+            <button class="table-tool-btn" id="btnMergeCells" disabled data-i18n="mergeCells">合并选中单元格</button>
+            <button class="table-tool-btn" id="btnSplitCell" data-i18n="splitCell">拆分当前单元格</button>
+            <button class="table-tool-btn" id="btnClearSelect" data-i18n="clearSelection">清除多选</button>
           </div>
 
           <div class="table-tool-group">
-            <h4>嵌套表格</h4>
-            <button class="table-tool-btn" id="btnInsertNestedTable">在当前单元格插入嵌套表格</button>
+            <h4 data-i18n="nestedTable">嵌套表格</h4>
+            <button class="table-tool-btn" id="btnInsertNestedTable" data-i18n="insertNestedTable">在当前单元格插入嵌套表格</button>
           </div>
         </div>
       </div>
@@ -223,15 +225,68 @@
   </div>
 
   <div id="left-panel" class="side-panel">
-    <div class="panel-title">组件库</div>
+    <div class="panel-title" data-i18n="componentLibrary">组件库</div>
     <div id="blocksPanel"></div>
   </div>
 </div>
 
 <input type="file" id="importFileInput" accept=".html,.htm">
+<script src="./i18n.js"></script>
 
 <script>
 (function () {
+  const translations = window.HTML_EDITOR_TRANSLATIONS;
+  const languageOptions = [
+    { code: 'zh', label: '中文' },
+    { code: 'en', label: 'English' },
+  ];
+  let language = 'zh';
+  const t = key => translations[language][key];
+  function renderLanguageOptions() {
+    const select = document.getElementById('languageSelect');
+    select.replaceChildren(...languageOptions.map(option => {
+      const element = document.createElement('option');
+      element.value = option.code;
+      element.dataset.language = option.code;
+      element.textContent = option.label;
+      return element;
+    }));
+    select.value = language;
+  }
+  function applyI18n() {
+    document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = t(element.dataset.i18n); });
+    document.title = t('appTitle');
+    const languageSelect = document.getElementById('languageSelect');
+    const languageLabel = language === 'zh' ? '选择语言' : 'Select language';
+    languageSelect.value = language;
+    languageSelect.title = languageLabel;
+    languageSelect.setAttribute('aria-label', languageLabel);
+    const blocks = editor.BlockManager.getAll();
+    blocks.forEach(block => {
+      const key = block.get('i18nKey');
+      if (key) block.set({ label: t(key), category: t(block.get('categoryKey')) });
+    });
+    const categoryLabels = document.querySelectorAll('#blocksPanel .gjs-block-category .gjs-title');
+    ['base', 'layout', 'tableCategory', 'typography', 'forms', 'navigation'].forEach((key, index) => {
+      if (categoryLabels[index]) categoryLabels[index].textContent = translations[language][key];
+    });
+    const sectorLabels = document.querySelectorAll('#stylesPanel .gjs-sm-sector-label');
+    ['styles', 'typography', 'decorations', 'flexLayout'].forEach((key, index) => {
+      if (sectorLabels[index]) sectorLabels[index].textContent = translations[language][key];
+    });
+    document.getElementById('multiSelectInfo').textContent = multiSelected.length ? t('selectedCells')(multiSelected.length) : t('multiSelectEmpty');
+  }
+
+  const blockTranslations = {
+    text: ['text', 'base'], heading: ['heading', 'base'], image: ['image', 'base'], button: ['button', 'base'], divider: ['divider', 'base'],
+    'section-1': ['singleColumn', 'layout'], 'section-2': ['twoColumns', 'layout'], 'section-3': ['threeColumns', 'layout'], 'section-3-7': ['threeSeven', 'layout'],
+    'table-basic': ['basicTable', 'tableCategory'], 'table-complex-header': ['complexTable', 'tableCategory'], 'table-nested': ['nestedTableExample', 'tableCategory'],
+    link: ['link', 'base'], video: ['video', 'base'], map: ['map', 'base'], spacer: ['spacer', 'base'],
+    quote: ['quote', 'typography'], 'link-block': ['linkCard', 'typography'], 'text-basic': ['paragraph', 'typography'],
+    form: ['form', 'forms'], input: ['input', 'forms'], textarea: ['textarea', 'forms'], select: ['select', 'forms'], checkbox: ['checkbox', 'forms'], navbar: ['navbar', 'navigation'],
+  };
+
   // ------------------------------------------------------------------
   // 初始化编辑器
   // ------------------------------------------------------------------
@@ -249,10 +304,10 @@
     styleManager: {
       appendTo: '#stylesPanel',
       sectors: [
-        { name: '尺寸', open: true, properties: ['width','height','min-height','margin','padding'] },
-        { name: '排版', open: false, properties: ['font-family','font-size','font-weight','letter-spacing','color','line-height','text-align'] },
-        { name: '装饰', open: false, properties: ['background-color','border-radius','border','box-shadow'] },
-        { name: 'Flex 布局', open: false, properties: ['display','flex-direction','justify-content','align-items','flex-wrap'] },
+        { name: t('styles'), open: true, properties: ['width','height','min-height','margin','padding'] },
+        { name: t('typography'), open: false, properties: ['font-family','font-size','font-weight','letter-spacing','color','line-height','text-align'] },
+        { name: t('decorations'), open: false, properties: ['background-color','border-radius','border','box-shadow'] },
+        { name: t('flexLayout'), open: false, properties: ['display','flex-direction','justify-content','align-items','flex-wrap'] },
       ]
     },
     deviceManager: {
@@ -277,13 +332,13 @@
     event.preventDefault();
     event.returnValue = '';
   });
+  editor.Css.setRule('td', { 'vertical-align': 'middle' });
+  editor.Css.setRule('th', { 'vertical-align': 'middle' });
 
   // ------------------------------------------------------------------
   // 自定义组件类型：表格单元格可编辑、行/单元格不可拖出
-  // extend:'text' 让单元格继承文本组件的双击编辑能力（contenteditable + 模型同步）
   // ------------------------------------------------------------------
   editor.DomComponents.addType('table-cell', {
-    extend: 'text',
     isComponent: el => el.tagName === 'TD' || el.tagName === 'TH',
     model: { defaults: { editable: true, draggable: false, droppable: true } },
   });
@@ -301,7 +356,7 @@
           'name',
           { type: 'checkbox', name: 'disabled' },
           { type: 'checkbox', name: 'multiple' },
-          { type: 'text', name: 'options', label: '选项(用 | 分隔)', changeProp: 1 },
+          { type: 'text', name: 'options', label: t('optionLabel'), changeProp: 1 },
         ],
       },
       init() {
@@ -359,7 +414,7 @@
   bm.add('text', {
     label: '文本', category: '基础',
     media: svgIcon('<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/>'),
-    content: '<p style="padding:6px;">这是一段文本，双击编辑。</p>',
+    content: '<div data-gjs-type="text">这是一段文本，双击编辑。</div>',
   });
   bm.add('heading', {
     label: '标题', category: '基础',
@@ -412,11 +467,11 @@
     media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/>'),
     content: `<table style="width:100%;border-collapse:collapse;" border="1">
       <thead>
-        <tr><th>列1</th><th>列2</th><th>列3</th></tr>
+        <tr><th><div data-gjs-type="text">列1</div></th><th><div data-gjs-type="text">列2</div></th><th><div data-gjs-type="text">列3</div></th></tr>
       </thead>
       <tbody>
-        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        <tr><td><div data-gjs-type="text">&nbsp;</div></td><td><div data-gjs-type="text">&nbsp;</div></td><td><div data-gjs-type="text">&nbsp;</div></td></tr>
+        <tr><td><div data-gjs-type="text">&nbsp;</div></td><td><div data-gjs-type="text">&nbsp;</div></td><td><div data-gjs-type="text">&nbsp;</div></td></tr>
       </tbody>
     </table>`,
   });
@@ -427,17 +482,17 @@
     content: `<table style="width:100%;border-collapse:collapse;" border="1">
       <thead>
         <tr>
-          <th rowspan="2">项目</th>
-          <th colspan="2">2023年</th>
-          <th colspan="2">2024年</th>
+          <th rowspan="2"><div data-gjs-type="text">项目</div></th>
+          <th colspan="2"><div data-gjs-type="text">2023年</div></th>
+          <th colspan="2"><div data-gjs-type="text">2024年</div></th>
         </tr>
         <tr>
-          <th>上半年</th><th>下半年</th><th>上半年</th><th>下半年</th>
+          <th><div data-gjs-type="text">上半年</div></th><th><div data-gjs-type="text">下半年</div></th><th><div data-gjs-type="text">上半年</div></th><th><div data-gjs-type="text">下半年</div></th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>收入</td><td>100</td><td>120</td><td>130</td><td>150</td></tr>
-        <tr><td>支出</td><td>80</td><td>90</td><td>95</td><td>100</td></tr>
+        <tr><td><div data-gjs-type="text">收入</div></td><td><div data-gjs-type="text">100</div></td><td><div data-gjs-type="text">120</div></td><td><div data-gjs-type="text">130</div></td><td><div data-gjs-type="text">150</div></td></tr>
+        <tr><td><div data-gjs-type="text">支出</div></td><td><div data-gjs-type="text">80</div></td><td><div data-gjs-type="text">90</div></td><td><div data-gjs-type="text">95</div></td><td><div data-gjs-type="text">100</div></td></tr>
       </tbody>
     </table>`,
   });
@@ -448,12 +503,12 @@
     content: `<table style="width:100%;border-collapse:collapse;" border="1">
       <tbody>
         <tr>
-          <td style="vertical-align:top;">外层单元格 A</td>
+          <td style="vertical-align:top;"><div data-gjs-type="text">外层单元格 A</div></td>
           <td style="vertical-align:top;">
             <table style="width:100%;border-collapse:collapse;" border="1">
               <tbody>
-                <tr><td>内嵌1</td><td>内嵌2</td></tr>
-                <tr><td>内嵌3</td><td>内嵌4</td></tr>
+                <tr><td><div data-gjs-type="text">内嵌1</div></td><td><div data-gjs-type="text">内嵌2</div></td></tr>
+                <tr><td><div data-gjs-type="text">内嵌3</div></td><td><div data-gjs-type="text">内嵌4</div></td></tr>
               </tbody>
             </table>
           </td>
@@ -576,12 +631,24 @@
     </nav>`,
   });
 
+  Object.entries(blockTranslations).forEach(([blockId, [labelKey, categoryKey]]) => {
+    const block = bm.get(blockId);
+    if (block) block.set({ i18nKey: labelKey, categoryKey });
+  });
+
   // ------------------------------------------------------------------
   // 表格网格辅助算法（合并/拆分/插入行列/删除行列/嵌套）
   // ------------------------------------------------------------------
   function isCellComp(c) {
     const t = (c.get('tagName') || '').toLowerCase();
     return t === 'td' || t === 'th';
+  }
+  function newCellComponent(tagName) {
+    return {
+      type: 'table-cell',
+      tagName: tagName || 'td',
+      components: [{ type: 'text', tagName: 'div', content: '&nbsp;' }],
+    };
   }
   function getAttrNum(comp, name) {
     const n = parseInt((comp.getAttributes() || {})[name], 10);
@@ -647,9 +714,9 @@
   }
 
   function mergeCells(cells) {
-    if (!cells || cells.length < 2) { alert('请先按住 Ctrl 点选至少两个单元格'); return; }
+    if (!cells || cells.length < 2) { alert(t('noMerge')); return; }
     const table = findTableComponent(cells[0]);
-    if (!table || cells.some(c => findTableComponent(c) !== table)) { alert('只能合并同一个表格内的单元格'); return; }
+    if (!table || cells.some(c => findTableComponent(c) !== table)) { alert(t('sameTable')); return; }
     const { grid } = buildGrid(table);
     const boxes = cells.map(c => getCellBox(grid, c));
     if (boxes.some(b => !b)) return;
@@ -660,12 +727,12 @@
     for (let r = r1; r <= r2; r++) {
       for (let c = c1; c <= c2; c++) {
         const cell = grid[r] && grid[r][c];
-        if (!cell) { alert('选中区域必须是完整的矩形，无法合并'); return; }
+        if (!cell) { alert(t('incompleteMerge')); return; }
         covered.add(cell);
       }
     }
     if (covered.size !== selectedSet.size || [...covered].some(c => !selectedSet.has(c))) {
-      alert('选中区域必须恰好构成一个矩形块（不能包含其他单元格）');
+      alert(t('invalidMerge'));
       return;
     }
     const primary = grid[r1][c1];
@@ -687,7 +754,7 @@
     const box = getCellBox(grid, cell);
     if (!box) return;
     const { r1, c1, r2, c2 } = box;
-    if (r1 === r2 && c1 === c2) { alert('该单元格未进行合并，无需拆分'); return; }
+    if (r1 === r2 && c1 === c2) { alert(t('noSplit')); return; }
     const tagName = cell.get('tagName');
     setSpan(cell, 'colspan', 1);
     setSpan(cell, 'rowspan', 1);
@@ -695,7 +762,7 @@
       const tr = rows[r];
       if (r === r1) {
         let at = indexInParent(cell) + 1;
-        for (let c = c1 + 1; c <= c2; c++) { tr.components().add({ tagName, content: '&nbsp;' }, { at }); at++; }
+        for (let c = c1 + 1; c <= c2; c++) { tr.components().add(newCellComponent(tagName), { at }); at++; }
       } else {
         const existing = tr.components().filter(isCellComp);
         let at = existing.length;
@@ -703,7 +770,7 @@
           const b = getCellBox(grid, existing[i]);
           if (b && b.c1 >= c1) { at = i; break; }
         }
-        for (let c = c1; c <= c2; c++) { tr.components().add({ tagName, content: '&nbsp;' }, { at }); at++; }
+        for (let c = c1; c <= c2; c++) { tr.components().add(newCellComponent(tagName), { at }); at++; }
       }
     }
     clearMultiSelection();
@@ -728,7 +795,7 @@
         c = b.c2 + 1;
         continue;
       }
-      newCells.push({ tagName: 'td', content: '&nbsp;' });
+      newCells.push(newCellComponent('td'));
       c++;
     }
     const refTr = rows[insertAt];
@@ -762,7 +829,7 @@
         if (b && b.c1 >= insertAt) { at = i; break; }
       }
       const tag = (existing[0] && existing[0].get('tagName')) || 'td';
-      tr.components().add({ tagName: tag, content: '&nbsp;' }, { at });
+      tr.components().add(newCellComponent(tag), { at });
     });
     clearMultiSelection();
   }
@@ -771,7 +838,7 @@
     const table = findTableComponent(cell);
     if (!table) return;
     const { grid, rows } = buildGrid(table);
-    if (rows.length <= 1) { alert('至少保留一行'); return; }
+    if (rows.length <= 1) { alert(t('keepRow')); return; }
     const box = getCellBox(grid, cell);
     if (!box) return;
     const rowIndex = box.r1;
@@ -809,7 +876,7 @@
     const box = getCellBox(grid, cell);
     if (!box) return;
     const totalCols = grid.reduce((m, row) => Math.max(m, (row || []).length), 0);
-    if (totalCols <= 1) { alert('至少保留一列'); return; }
+    if (totalCols <= 1) { alert(t('keepColumn')); return; }
     const colIndex = box.c1;
     const processed = new Set();
     rows.forEach((tr, r) => {
@@ -830,8 +897,8 @@
       components: [{
         tagName: 'tbody',
         components: [
-          { tagName: 'tr', components: [{ tagName: 'td', content: '内嵌1' }, { tagName: 'td', content: '内嵌2' }] },
-          { tagName: 'tr', components: [{ tagName: 'td', content: '内嵌3' }, { tagName: 'td', content: '内嵌4' }] },
+          { tagName: 'tr', components: [{ tagName: 'td', components: [{ type: 'text', tagName: 'div', content: '内嵌1' }] }, { tagName: 'td', components: [{ type: 'text', tagName: 'div', content: '内嵌2' }] }] },
+          { tagName: 'tr', components: [{ tagName: 'td', components: [{ type: 'text', tagName: 'div', content: '内嵌3' }] }, { tagName: 'td', components: [{ type: 'text', tagName: 'div', content: '内嵌4' }] }] },
         ],
       }],
     });
@@ -863,9 +930,7 @@
   }
   function updateMultiSelectUI() {
     const info = document.getElementById('multiSelectInfo');
-    info.textContent = multiSelected.length
-      ? `已选中 ${multiSelected.length} 个单元格（按住 Ctrl 继续点选，选好后点击"合并选中单元格"）`
-      : '未选择合并目标（按住 Ctrl 并点击多个单元格可多选）';
+    info.textContent = multiSelected.length ? t('selectedCells')(multiSelected.length) : t('multiSelectEmpty');
     document.getElementById('btnMergeCells').disabled = multiSelected.length < 2;
   }
   function updateTablePanel(component) {
@@ -952,9 +1017,9 @@
 
   function importHtmlFile(file) {
     if (!file) return;
-    if (hasCanvasContent() && !confirm('导入将替换当前画布内容，是否继续？')) return;
+    if (hasCanvasContent() && !confirm(t('confirmImport'))) return;
     if (!/\.html?$/i.test(file.name)) {
-      alert('请拖入 HTML 文件（.html 或 .htm）');
+      alert(t('invalidFile'));
       return;
     }
     const reader = new FileReader();
@@ -1013,8 +1078,8 @@
     const button = document.getElementById('btnToggleBlocks');
     app.classList.toggle('blocks-open', open);
     button.setAttribute('aria-expanded', String(open));
-    button.setAttribute('aria-label', open ? '隐藏组件库' : '显示组件库');
-    button.title = open ? '隐藏组件库' : '显示组件库';
+    button.setAttribute('aria-label', open ? t('hideBlocks') : t('showBlocks'));
+    button.title = open ? t('hideBlocks') : t('showBlocks');
     activateTab(open ? 'layers' : 'styles');
     editor.refresh();
   }
@@ -1045,7 +1110,12 @@
   editor.on('load', () => {
     const doc = editor.Canvas.getDocument();
     const style = doc.createElement('style');
-    style.innerHTML = '.gjs-cell-multiselected{outline:2px dashed #1976d2 !important;outline-offset:-2px;}';
+    style.id = 'editor-table-selection-style';
+    style.innerHTML = `
+      .gjs-cell-multiselected{outline:2px dashed #1976d2 !important;outline-offset:-2px;}
+      td:not([style*="padding"]), th:not([style*="padding"]){padding:8px 12px;}
+      td > [data-gjs-type="text"], th > [data-gjs-type="text"]{font-size:12px;line-height:1.4;}
+    `;
     doc.head.appendChild(style);
     attachCtrlListeners(doc);
     // 自定义布局下画布尺寸在初始化时可能测量过早，load 后重新计算填满容器
@@ -1076,6 +1146,10 @@
   document.getElementById('btnToggleBlocks').onclick = () => {
     setBlocksOpen(!document.getElementById('app').classList.contains('blocks-open'));
   };
+  document.getElementById('languageSelect').onchange = event => {
+    language = event.target.value;
+    applyI18n();
+  };
 
   // ------------------------------------------------------------------
   // 顶部工具栏：新建 / 导入 / 导出 / 预览 / 查看代码 / 撤销重做 / 设备
@@ -1084,11 +1158,11 @@
     clearMultiSelection();
     const html = editor.getHtml();
     const css = editor.getCss();
-    return `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<title>导出页面</title>\n<style>${css}\n${importedDocumentCss}</style>\n</head>\n${html}\n</html>`;
+    return `<!DOCTYPE html>\n<html lang="${language === 'zh' ? 'zh-CN' : 'en'}">\n<head>\n<meta charset="UTF-8">\n<title>${t('appTitle')}</title>\n<style>${css}\n${importedDocumentCss}</style>\n</head>\n${html}\n</html>`;
   }
 
   document.getElementById('btnNew').onclick = () => {
-    if (hasCanvasContent() && !confirm('新建将清空当前画布内容，是否继续？')) return;
+    if (hasCanvasContent() && !confirm(t('confirmNew'))) return;
     clearMultiSelection();
     editor.setComponents([]);
     setEditorEmpty(false);
@@ -1120,7 +1194,7 @@
 
   document.getElementById('btnPreview').onclick = () => {
     const win = window.open('', '_blank');
-    if (!win) { alert('浏览器阻止了弹出窗口，请允许弹窗后重试'); return; }
+    if (!win) { alert(t('popupBlocked')); return; }
     win.document.open();
     win.document.write(buildFullDocument());
     win.document.close();
@@ -1133,17 +1207,17 @@
     const wrapper = document.createElement('div');
     wrapper.className = 'code-view';
     wrapper.innerHTML = `
-      <h4>HTML</h4>
+      <h4>${t('html')}</h4>
       <textarea readonly id="codeHtmlArea"></textarea>
-      <h4>CSS</h4>
+      <h4>${t('css')}</h4>
       <textarea readonly id="codeCssArea"></textarea>
-      <button class="tb-btn" id="btnCopyCode" style="color:#1e2430;">复制 HTML+CSS</button>
+      <button class="tb-btn" id="btnCopyCode" style="color:#1e2430;">${t('copy')}</button>
     `;
-    editor.Modal.open({ title: '查看代码', content: wrapper });
+    editor.Modal.open({ title: t('codeTitle'), content: wrapper });
     wrapper.querySelector('#codeHtmlArea').value = html;
     wrapper.querySelector('#codeCssArea').value = css;
     wrapper.querySelector('#btnCopyCode').onclick = () => {
-      navigator.clipboard.writeText(buildFullDocument()).then(() => alert('已复制到剪贴板'));
+      navigator.clipboard.writeText(buildFullDocument()).then(() => alert(t('copied')));
     };
   };
 
@@ -1154,7 +1228,10 @@
     document.getElementById('deviceSelect').value = editor.getDevice();
   });
 
+  renderLanguageOptions();
+  applyI18n();
   setEditorEmpty(true);
+  hasUnexportedChanges = false;
 
 })();
 </script>
