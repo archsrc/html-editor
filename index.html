@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML 可视化编辑器</title>
+<!-- <link rel="icon" href="https://app.grapesjs.com/docs-sdk/img/favicon.ico">
+<link rel="stylesheet" href="https://unpkg.com/grapesjs@0.23.5/dist/css/grapes.min.css">
+<script src="https://unpkg.com/grapesjs@0.23.5/dist/grapes.min.js"></script> -->
+<link rel="icon" href="./favicon.ico">
+<link rel="stylesheet" href="./grapes.min.css">
+<script src="./grapes.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif; }
+  #top-bar {
+    height:52px; display:flex; align-items:center; gap:6px; padding:0 14px;
+    background:linear-gradient(180deg, #232a38 0%, #1a1f2b 100%);
+    color:#e8eaf0; flex-shrink:0; overflow-x:auto;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    box-shadow:0 1px 8px rgba(0,0,0,.35);
+  }
+  #top-bar .brand {
+    display:flex; align-items:center; gap:9px; margin-right:16px; white-space:nowrap;
+    font-weight:700; font-size:14px; letter-spacing:.3px;
+  }
+  #top-bar .brand .logo {
+    width:24px; height:24px; border-radius:7px; flex-shrink:0;
+    background:linear-gradient(135deg, #4da3ff 0%, #7c5cff 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:800; color:#fff; box-shadow:0 2px 6px rgba(77,163,255,.4);
+  }
+  #top-bar .sep { width:1px; height:22px; background:rgba(255,255,255,.1); margin:0 8px; flex-shrink:0; }
+  .tb-btn {
+    background:rgba(255,255,255,.06); color:#e8eaf0; border:1px solid rgba(255,255,255,.1);
+    border-radius:8px; padding:7px 12px; font-size:13px; cursor:pointer; white-space:nowrap;
+    transition:background .18s, border-color .18s, transform .1s, box-shadow .18s;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .tb-btn:hover {
+    background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.22);
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+  }
+  .tb-btn:active { transform:translateY(1px); }
+  .tb-btn:disabled { opacity:.38; cursor:not-allowed; box-shadow:none; transform:none; }
+  .tb-btn.primary {
+    background:linear-gradient(135deg, #4da3ff 0%, #7c5cff 100%);
+    border-color:transparent; color:#fff; font-weight:600;
+    box-shadow:0 2px 8px rgba(77,163,255,.35);
+  }
+  .tb-btn.primary:hover { box-shadow:0 4px 14px rgba(77,163,255,.5); }
+  #top-bar select {
+    background:rgba(255,255,255,.06); color:#e8eaf0; border:1px solid rgba(255,255,255,.1);
+    border-radius:8px; padding:7px 8px; font-size:13px; cursor:pointer;
+    outline:none; transition:border-color .18s, background .18s;
+  }
+  #top-bar select:hover { background:rgba(255,255,255,.13); border-color:rgba(255,255,255,.22); }
+  #top-bar select option { background:#232a38; color:#e8eaf0; }
+  .icon-btn { width:36px; height:36px; justify-content:center; padding:0; margin-left:auto; }
+  .icon-btn svg { width:18px; height:18px; }
+  #app { display:flex; height: calc(100vh - 52px); }
+  /* 侧边栏保持 GrapesJS 原生深色皮肤的底色，避免内部图层/样式文字（浅色字）与自定义浅色背景对比度过低 */
+  .side-panel {
+    width:260px; background:#3c3e44; overflow-y:auto;
+    display:flex; flex-direction:column; flex-shrink:0;
+  }
+  #left-panel { display:none; border-left:1px solid #202226; }
+  #app.blocks-open #left-panel { display:flex; }
+  #right-panel { border-left:1px solid #202226; }
+  #app.blocks-open #right-panel { display:none; }
+  #editor-container { flex:1; min-width:0; background:#fff; display:flex; }
+  #gjs { height:100%; width:100%; flex:1; }
+  #editor-container.editor-empty { background:#242830; }
+  #editor-container.editor-empty #gjs { display:none; }
+  #emptyEditorState {
+    display:none; flex:1; align-items:center; justify-content:center; text-align:center;
+    padding:32px; color:#b8c2d1;
+  }
+  #editor-container.editor-empty #emptyEditorState { display:flex; }
+  #editor-container.editor-empty.editor-dragover { background:#202936; }
+  #editor-container.editor-empty.editor-dragover .empty-editor-card { transform:scale(1.02); }
+  .empty-editor-card { max-width:420px; }
+  .empty-editor-icon {
+    width:58px; height:58px; margin:0 auto 16px; border:1px solid #526071;
+    border-radius:14px; display:flex; align-items:center; justify-content:center;
+    color:#70b7ff; background:#303641; box-shadow:0 6px 18px rgba(0,0,0,.24);
+  }
+  .empty-editor-icon svg { width:28px; height:28px; }
+  .empty-editor-card h2 { margin:0 0 10px; color:#f1f5f9; font-size:20px; font-weight:600; }
+  .empty-editor-card p { margin:0; line-height:1.8; font-size:13px; }
+  #selectorPanel { padding:10px 10px 0; background:#3c3e44; }
+  #selectorPanel:empty { display:none; }
+  #selectorPanel > .gjs-clm-tags:nth-child(n+2) { display:none; }
+  .gjs-cv-canvas { width:100% !important; }
+  .panel-title { font-size:12px; font-weight:600; color:#c7c9cf; padding:10px 12px 4px; }
+  .tabs { display:flex; border-bottom:1px solid #202226; flex-shrink:0; }
+  .tab-btn {
+    flex:1; padding:9px 4px; font-size:12px; text-align:center; cursor:pointer; background:#2f3136;
+    border:none; border-right:1px solid #202226; color:#aeb1b8;
+  }
+  .tab-btn:last-child { border-right:none; }
+  .tab-btn.active { background:#3c3e44; color:#4da3ff; font-weight:600; }
+  .tab-pane { display:none; flex:1; overflow-y:auto; }
+  .tab-pane.active { display:block; }
+  /* 表格工具面板沿用 GrapesJS 原生深色皮肤 */
+  #tablePanel { padding:10px; font-size:13px; background:#3c3e44; color:#e8eaf0; min-height:100%; }
+  #tableEmptyHint { color:#aeb1b8; padding:16px 6px; font-size:12px; line-height:1.6; }
+  .table-tool-group { margin-bottom:14px; }
+  .table-tool-group h4 { margin:0 0 6px; font-size:12px; color:#c7c9cf; }
+  .table-tool-btn {
+    display:block; width:100%; text-align:left; margin-bottom:6px; padding:7px 10px;
+    background:#2f3136; color:#e8eaf0; border:1px solid #626873; border-radius:4px; font-size:12.5px; cursor:pointer;
+  }
+  .table-tool-btn:hover { background:#454951; border-color:#4da3ff; }
+  .table-tool-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .table-tool-row { display:flex; gap:6px; }
+  .table-tool-row .table-tool-btn { flex:1; }
+  #multiSelectInfo { font-size:12px; color:#9dccff; background:#263b52; padding:6px 8px; border-radius:4px; margin-bottom:10px; }
+  /* GrapesJS 默认块样式会强制给块图标里的 svg 形状设置 fill，需要覆盖回描边样式才能正常显示线框图标 */
+  .gjs-block svg, .gjs-block svg * { fill:none !important; stroke:currentColor !important; }
+  .gjs-block svg .icon-fill { fill:currentColor !important; opacity:.3; }
+  #importFileInput { display:none; }
+  .code-view textarea {
+    width:100%; height:220px; font-family:Consolas,monospace; font-size:12px; margin-bottom:8px;
+    box-sizing:border-box; padding:8px;
+  }
+  .code-view h4 { margin:4px 0; }
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div class="brand">
+    <div class="logo">H</div>
+    <span>HTML 可视化编辑器</span>
+  </div>
+  <button class="tb-btn" id="btnNew">新建</button>
+  <button class="tb-btn" id="btnImport">导入</button>
+  <button class="tb-btn primary" id="btnExport">导出 HTML</button>
+  <button class="tb-btn" id="btnPreview">预览</button>
+  <button class="tb-btn" id="btnViewCode">查看代码</button>
+  <div class="sep"></div>
+  <button class="tb-btn" id="btnUndo">撤销</button>
+  <button class="tb-btn" id="btnRedo">重做</button>
+  <div class="sep"></div>
+  <select id="deviceSelect">
+    <option value="Desktop">桌面</option>
+    <option value="Tablet">平板</option>
+    <option value="Mobile">手机</option>
+  </select>
+  <button class="tb-btn icon-btn" id="btnToggleBlocks" title="显示组件库" aria-label="显示组件库" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/>
+      <rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>
+    </svg>
+  </button>
+</div>
+
+<div id="app">
+  <div id="editor-container">
+    <div id="gjs"></div>
+    <div id="emptyEditorState" aria-live="polite">
+      <div class="empty-editor-card">
+        <div class="empty-editor-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M16 4v5"/>
+          </svg>
+        </div>
+        <h2>开始创建或导入页面</h2>
+        <p>点击右上角组件库按钮选择组件，拖入此区域开始编辑。</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="right-panel" class="side-panel">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="styles">样式</button>
+      <button class="tab-btn" data-tab="layers">图层</button>
+      <button class="tab-btn" data-tab="traits">属性</button>
+      <button class="tab-btn" data-tab="table">表格</button>
+    </div>
+    <div class="tab-pane active" id="pane-styles"><div id="selectorPanel"></div><div id="stylesPanel"></div></div>
+    <div class="tab-pane" id="pane-layers"><div id="layersPanel"></div></div>
+    <div class="tab-pane" id="pane-traits"><div id="traitsPanel"></div></div>
+    <div class="tab-pane" id="pane-table">
+      <div id="tablePanel">
+        <div id="tableEmptyHint">请在画布中选中一个表格单元格（td / th）以使用表格工具。</div>
+        <div id="tableToolsBody" style="display:none;">
+          <div id="multiSelectInfo">未选择合并目标（按住 Ctrl 并点击多个单元格可多选）</div>
+
+          <div class="table-tool-group">
+            <h4>行操作</h4>
+            <div class="table-tool-row">
+              <button class="table-tool-btn" id="btnRowAbove">上方插入行</button>
+              <button class="table-tool-btn" id="btnRowBelow">下方插入行</button>
+            </div>
+            <button class="table-tool-btn" id="btnDeleteRow">删除当前行</button>
+          </div>
+
+          <div class="table-tool-group">
+            <h4>列操作</h4>
+            <div class="table-tool-row">
+              <button class="table-tool-btn" id="btnColLeft">左侧插入列</button>
+              <button class="table-tool-btn" id="btnColRight">右侧插入列</button>
+            </div>
+            <button class="table-tool-btn" id="btnDeleteCol">删除当前列</button>
+          </div>
+
+          <div class="table-tool-group">
+            <h4>合并 / 拆分</h4>
+            <button class="table-tool-btn" id="btnMergeCells" disabled>合并选中单元格</button>
+            <button class="table-tool-btn" id="btnSplitCell">拆分当前单元格</button>
+            <button class="table-tool-btn" id="btnClearSelect">清除多选</button>
+          </div>
+
+          <div class="table-tool-group">
+            <h4>嵌套表格</h4>
+            <button class="table-tool-btn" id="btnInsertNestedTable">在当前单元格插入嵌套表格</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="left-panel" class="side-panel">
+    <div class="panel-title">组件库</div>
+    <div id="blocksPanel"></div>
+  </div>
+</div>
+
+<input type="file" id="importFileInput" accept=".html,.htm">
+
+<script>
+(function () {
+  // ------------------------------------------------------------------
+  // 初始化编辑器
+  // ------------------------------------------------------------------
+  const editor = grapesjs.init({
+    container: '#gjs',
+    height: '100%',
+    width: 'auto',
+    fromElement: false,
+    storageManager: false,
+    panels: { defaults: [] },
+    blockManager: { appendTo: '#blocksPanel' },
+    layerManager: { appendTo: '#layersPanel' },
+    traitManager: { appendTo: '#traitsPanel' },
+    selectorManager: { appendTo: '#selectorPanel', componentFirst: true },
+    styleManager: {
+      appendTo: '#stylesPanel',
+      sectors: [
+        { name: '尺寸', open: true, properties: ['width','height','min-height','margin','padding'] },
+        { name: '排版', open: false, properties: ['font-family','font-size','font-weight','letter-spacing','color','line-height','text-align'] },
+        { name: '装饰', open: false, properties: ['background-color','border-radius','border','box-shadow'] },
+        { name: 'Flex 布局', open: false, properties: ['display','flex-direction','justify-content','align-items','flex-wrap'] },
+      ]
+    },
+    deviceManager: {
+      devices: [
+        { name: 'Desktop', width: '' },
+        { name: 'Tablet', width: '768px', widthMedia: '992px' },
+        { name: 'Mobile', width: '375px', widthMedia: '480px' },
+      ]
+    },
+    canvas: {},
+  });
+
+  let hasUnexportedChanges = false;
+  const markUnexported = () => { hasUnexportedChanges = true; };
+  editor.on('component:add', markUnexported);
+  editor.on('component:remove', markUnexported);
+  editor.on('component:update', markUnexported);
+  editor.on('styleable:change', markUnexported);
+  editor.on('change:style', markUnexported);
+  window.addEventListener('beforeunload', event => {
+    if (!hasUnexportedChanges) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
+
+  // ------------------------------------------------------------------
+  // 自定义组件类型：表格单元格可编辑、行/单元格不可拖出
+  // extend:'text' 让单元格继承文本组件的双击编辑能力（contenteditable + 模型同步）
+  // ------------------------------------------------------------------
+  editor.DomComponents.addType('table-cell', {
+    extend: 'text',
+    isComponent: el => el.tagName === 'TD' || el.tagName === 'TH',
+    model: { defaults: { editable: true, draggable: false, droppable: true } },
+  });
+  editor.DomComponents.addType('table-row', {
+    isComponent: el => el.tagName === 'TR',
+    model: { defaults: { draggable: false, droppable: false } },
+  });
+  // select 的 <option> 是原生控件，浏览器不支持 contenteditable。
+  // 这里在"属性"面板用普通单行输入框，多个选项之间用 | 分隔。
+  editor.DomComponents.addType('select', {
+    isComponent: el => el.tagName === 'SELECT',
+    model: {
+      defaults: {
+        traits: [
+          'name',
+          { type: 'checkbox', name: 'disabled' },
+          { type: 'checkbox', name: 'multiple' },
+          { type: 'text', name: 'options', label: '选项(用 | 分隔)', changeProp: 1 },
+        ],
+      },
+      init() {
+        this.on('change:options', this.onOptionsChange);
+        // 从已有 <option> 子组件中读取文本，用 | 拼接回填到 options 属性，供属性面板显示
+        const cur = this.components()
+          .filter(c => (c.get('tagName') || '').toLowerCase() === 'option')
+          .map(c => {
+            let t = c.get('content') || '';
+            if (!t) t = c.components().map(ch => ch.get('content') || '').join('');
+            return t.replace(/&nbsp;/g, ' ').trim();
+          })
+          .filter(Boolean)
+          .join('|');
+        this.set('options', cur, { silent: true });
+      },
+      onOptionsChange() {
+        const text = this.get('options') || '';
+        const items = text.split('|').map(s => s.trim()).filter(Boolean);
+        this.components(items.map(item => ({
+          tagName: 'option',
+          content: item,
+          attributes: { value: item },
+        })));
+      },
+    },
+  });
+  // textarea / input 的 placeholder 等是 HTML 属性，无法直接双击编辑，
+  // 因此在"属性"面板中暴露 name / placeholder / 等属性供修改。
+  editor.DomComponents.addType('textarea', {
+    isComponent: el => el.tagName === 'TEXTAREA',
+    model: { defaults: { traits: ['name', 'placeholder', { type: 'number', name: 'rows' }, 'disabled'] } },
+  });
+  editor.DomComponents.addType('input', {
+    isComponent: el => el.tagName === 'INPUT',
+    model: {
+      defaults: {
+        traits: [
+          { type: 'select', name: 'type', options: ['text', 'email', 'number', 'password', 'tel', 'url'] },
+          'name',
+          'placeholder',
+          'value',
+          'disabled',
+        ],
+      },
+    },
+  });
+
+  // ------------------------------------------------------------------
+  // 基础组件块（media 为块缩略图 SVG 图标）
+  // ------------------------------------------------------------------
+  const bm = editor.BlockManager;
+  const svgIcon = inner => `<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+
+  bm.add('text', {
+    label: '文本', category: '基础',
+    media: svgIcon('<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/>'),
+    content: '<p style="padding:6px;">这是一段文本，双击编辑。</p>',
+  });
+  bm.add('heading', {
+    label: '标题', category: '基础',
+    media: svgIcon('<path d="M5 4v16M19 4v16M5 12h14"/>'),
+    content: '<h2 style="padding:6px;">标题文字</h2>',
+  });
+  bm.add('image', {
+    label: '图片', category: '基础',
+    media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5-4 4-3-3-6 6"/>'),
+    content: { type: 'image', style: { width: '200px' } },
+  });
+  bm.add('button', {
+    label: '按钮', category: '基础',
+    media: svgIcon('<rect x="3" y="8" width="18" height="8" rx="2"/><line x1="7" y1="12" x2="17" y2="12"/>'),
+    content: '<button style="padding:8px 18px;background:#1976d2;color:#fff;border:none;border-radius:4px;cursor:pointer;">按钮</button>',
+  });
+  bm.add('divider', {
+    label: '分割线', category: '基础',
+    media: svgIcon('<line x1="3" y1="12" x2="21" y2="12"/>'),
+    content: '<hr style="border:none;border-top:1px solid #ddd;margin:10px 0;">',
+  });
+  bm.add('section-1', {
+    label: '单栏容器', category: '布局',
+    media: svgIcon('<rect x="3" y="5" width="18" height="14" rx="1"/>'),
+    content: '<div style="padding:20px;min-height:60px;border:1px dashed transparent;"></div>',
+  });
+  bm.add('section-2', {
+    label: '双栏布局', category: '布局',
+    media: svgIcon('<rect x="3" y="5" width="8" height="14" rx="1"/><rect x="13" y="5" width="8" height="14" rx="1"/>'),
+    content: `<div style="display:flex;gap:12px;padding:10px;">
+      <div style="flex:1;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+      <div style="flex:1;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+    </div>`,
+  });
+  bm.add('section-3', {
+    label: '三栏布局', category: '布局',
+    media: svgIcon('<rect x="2.5" y="5" width="5.3" height="14" rx="1"/><rect x="9.3" y="5" width="5.3" height="14" rx="1"/><rect x="16.2" y="5" width="5.3" height="14" rx="1"/>'),
+    content: `<div style="display:flex;gap:12px;padding:10px;">
+      <div style="flex:1;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+      <div style="flex:1;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+      <div style="flex:1;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+    </div>`,
+  });
+
+  // ------------------------------------------------------------------
+  // 表格相关组件块
+  // ------------------------------------------------------------------
+  bm.add('table-basic', {
+    label: '基础表格', category: '表格',
+    media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/>'),
+    content: `<table style="width:100%;border-collapse:collapse;" border="1">
+      <thead>
+        <tr><th>列1</th><th>列2</th><th>列3</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+      </tbody>
+    </table>`,
+  });
+
+  bm.add('table-complex-header', {
+    label: '复杂表头表格', category: '表格',
+    media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="1"/><rect class="icon-fill" x="3" y="4" width="18" height="5" stroke="none"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="9" y1="9" x2="9" y2="20"/><line x1="15" y1="9" x2="15" y2="20"/>'),
+    content: `<table style="width:100%;border-collapse:collapse;" border="1">
+      <thead>
+        <tr>
+          <th rowspan="2">项目</th>
+          <th colspan="2">2023年</th>
+          <th colspan="2">2024年</th>
+        </tr>
+        <tr>
+          <th>上半年</th><th>下半年</th><th>上半年</th><th>下半年</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>收入</td><td>100</td><td>120</td><td>130</td><td>150</td></tr>
+        <tr><td>支出</td><td>80</td><td>90</td><td>95</td><td>100</td></tr>
+      </tbody>
+    </table>`,
+  });
+
+  bm.add('table-nested', {
+    label: '嵌套表格示例', category: '表格',
+    media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="1"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="14.5" y1="9" x2="19.5" y2="9"/><line x1="14.5" y1="13" x2="19.5" y2="13"/><line x1="17" y1="6" x2="17" y2="18"/>'),
+    content: `<table style="width:100%;border-collapse:collapse;" border="1">
+      <tbody>
+        <tr>
+          <td style="vertical-align:top;">外层单元格 A</td>
+          <td style="vertical-align:top;">
+            <table style="width:100%;border-collapse:collapse;" border="1">
+              <tbody>
+                <tr><td>内嵌1</td><td>内嵌2</td></tr>
+                <tr><td>内嵌3</td><td>内嵌4</td></tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>`,
+  });
+
+  // ------------------------------------------------------------------
+  // 基础组件补充（参考 GrapesJS demo：link / video / map / spacer）
+  // ------------------------------------------------------------------
+  bm.add('link', {
+    label: '链接', category: '基础',
+    media: svgIcon('<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>'),
+    content: '<a href="https://example.com" style="color:#1976d2;text-decoration:underline;">这是一个链接</a>',
+  });
+  bm.add('video', {
+    label: '视频', category: '基础',
+    media: svgIcon('<rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>'),
+    content: '<video controls style="width:100%;max-width:480px;" src="https://archive.org/download/Big_Buck_Bunny_124_pages_of_glory/Big_Buck_Bunny_124_pages_of_glory_512kb.mp4">您的浏览器不支持 video 标签。</video>',
+  });
+  bm.add('map', {
+    label: '地图', category: '基础',
+    media: svgIcon('<polygon points="1 6 8 3 16 6 23 3 23 18 16 21 8 18 1 21 1 6"/><line x1="8" y1="3" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="21"/>'),
+    content: '<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=116.30,39.95,116.45,40.02&layer=mapnik" style="width:100%;height:320px;border:0;"></iframe>',
+  });
+  bm.add('spacer', {
+    label: '间距', category: '基础',
+    media: svgIcon('<line x1="3" y1="12" x2="21" y2="12" stroke-dasharray="4 3"/><path d="M9 8h6M9 16h6"/>'),
+    content: '<div style="height:50px;"></div>',
+  });
+
+  // ------------------------------------------------------------------
+  // 布局补充：3/7 不对称分栏（参考 grapesjs-blocks-basic 的 column3-7）
+  // ------------------------------------------------------------------
+  bm.add('section-3-7', {
+    label: '3/7 分栏', category: '布局',
+    media: svgIcon('<rect x="3" y="5" width="5" height="14" rx="1"/><rect x="10" y="5" width="11" height="14" rx="1"/>'),
+    content: `<div style="display:flex;gap:12px;padding:10px;">
+      <div style="flex:3;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+      <div style="flex:7;min-height:60px;padding:10px;border:1px dashed #ccc;"></div>
+    </div>`,
+  });
+
+  // ------------------------------------------------------------------
+  // 排版组件（参考 preset-webpage：quote / link-block / text-basic）
+  // ------------------------------------------------------------------
+  bm.add('quote', {
+    label: '引用', category: '排版',
+    media: svgIcon('<path d="M3 7h7v6a4 4 0 0 1-4 4M14 7h7v6a4 4 0 0 1-4 4"/>'),
+    content: '<blockquote style="margin:0;padding:10px 20px;border-left:4px solid #1976d2;color:#555;background:#f5f5f5;">这是一段引用文字，可以在这里写下名人名言或重要内容。</blockquote>',
+  });
+  bm.add('link-block', {
+    label: '链接卡片', category: '排版',
+    media: svgIcon('<rect x="3" y="5" width="18" height="14" rx="2"/><line x1="7" y1="11" x2="17" y2="11"/><path d="M7 15h6"/>'),
+    content: `<a href="https://example.com" style="display:block;padding:16px;border:1px solid #ddd;border-radius:6px;text-decoration:none;color:inherit;">
+      <h3 style="margin:0 0 6px;font-size:16px;">链接卡片标题</h3>
+      <p style="margin:0;color:#666;font-size:13px;">点击查看更多内容 →</p>
+    </a>`,
+  });
+  bm.add('text-basic', {
+    label: '段落文本', category: '排版',
+    media: svgIcon('<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><line x1="4" y1="18" x2="16" y2="18"/>'),
+    content: '<p style="padding:6px;color:#333;line-height:1.7;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum. 这里是一段示例文本，双击即可编辑内容。</p>',
+  });
+
+  // ------------------------------------------------------------------
+  // 表单组件（参考 grapesjs-plugin-forms）
+  // ------------------------------------------------------------------
+  bm.add('form', {
+    label: '表单容器', category: '表单',
+    media: svgIcon('<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="13" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/>'),
+    content: `<form style="padding:16px;max-width:400px;">
+      <div style="margin-bottom:12px;">
+        <label style="display:block;margin-bottom:4px;font-size:13px;">姓名</label>
+        <input type="text" placeholder="请输入姓名" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;"/>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;margin-bottom:4px;font-size:13px;">留言</label>
+        <textarea placeholder="请输入留言" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;min-height:80px;"></textarea>
+      </div>
+      <button type="submit" style="padding:8px 20px;background:#1976d2;color:#fff;border:none;border-radius:4px;cursor:pointer;">提交</button>
+    </form>`,
+  });
+  bm.add('input', {
+    label: '输入框', category: '表单',
+    media: svgIcon('<rect x="3" y="9" width="18" height="6" rx="1"/><line x1="6" y1="12" x2="14" y2="12"/>'),
+    content: '<input type="text" placeholder="请输入..." style="width:100%;max-width:300px;padding:8px 10px;border:1px solid #ccc;border-radius:4px;"/>',
+  });
+  bm.add('textarea', {
+    label: '文本域', category: '表单',
+    media: svgIcon('<rect x="3" y="5" width="18" height="14" rx="1"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="14" y2="13"/>'),
+    content: '<textarea placeholder="请输入多行文本..." style="width:100%;max-width:300px;padding:8px 10px;border:1px solid #ccc;border-radius:4px;min-height:80px;"></textarea>',
+  });
+  bm.add('select', {
+    label: '下拉框', category: '表单',
+    media: svgIcon('<rect x="3" y="7" width="18" height="10" rx="1"/><polyline points="8 11 12 14 16 11"/>'),
+    content: '<select style="width:100%;max-width:300px;padding:8px 10px;border:1px solid #ccc;border-radius:4px;"><option>选项一</option><option>选项二</option><option>选项三</option></select>',
+  });
+  bm.add('checkbox', {
+    label: '复选框', category: '表单',
+    media: svgIcon('<rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="8 12 11 15 16 9"/>'),
+    content: '<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox"/> 同意条款</label>',
+  });
+
+  // ------------------------------------------------------------------
+  // 导航组件（参考 grapesjs-navbar）
+  // ------------------------------------------------------------------
+  bm.add('navbar', {
+    label: '导航栏', category: '导航',
+    media: svgIcon('<rect x="3" y="6" width="18" height="12" rx="1"/><line x1="7" y1="12" x2="13" y2="12"/><line x1="7" y1="9" x2="17" y2="9"/>'),
+    content: `<nav style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;border-bottom:1px solid #eee;">
+      <a href="#" style="font-weight:700;font-size:18px;color:#222;text-decoration:none;">LOGO</a>
+      <ul style="display:flex;gap:20px;list-style:none;margin:0;padding:0;">
+        <li><a href="#" style="color:#333;text-decoration:none;font-size:14px;">首页</a></li>
+        <li><a href="#" style="color:#333;text-decoration:none;font-size:14px;">产品</a></li>
+        <li><a href="#" style="color:#333;text-decoration:none;font-size:14px;">关于</a></li>
+        <li><a href="#" style="color:#333;text-decoration:none;font-size:14px;">联系</a></li>
+      </ul>
+    </nav>`,
+  });
+
+  // ------------------------------------------------------------------
+  // 表格网格辅助算法（合并/拆分/插入行列/删除行列/嵌套）
+  // ------------------------------------------------------------------
+  function isCellComp(c) {
+    const t = (c.get('tagName') || '').toLowerCase();
+    return t === 'td' || t === 'th';
+  }
+  function getAttrNum(comp, name) {
+    const n = parseInt((comp.getAttributes() || {})[name], 10);
+    return (!n || n < 1) ? 1 : n;
+  }
+  function setSpan(comp, name, value) {
+    const attrs = Object.assign({}, comp.getAttributes());
+    if (value && value > 1) attrs[name] = String(value); else delete attrs[name];
+    comp.set('attributes', attrs);
+  }
+  function indexInParent(comp) {
+    const p = comp.parent();
+    return p ? p.components().indexOf(comp) : 0;
+  }
+  function findTableComponent(comp) {
+    let cur = comp;
+    while (cur) {
+      if ((cur.get('tagName') || '').toLowerCase() === 'table') return cur;
+      cur = cur.parent();
+    }
+    return null;
+  }
+  function getRowComponents(table) {
+    const rows = [];
+    (function walk(comp) {
+      comp.components().forEach(ch => {
+        const tag = (ch.get('tagName') || '').toLowerCase();
+        if (tag === 'tr') rows.push(ch);
+        else if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot') walk(ch);
+      });
+    })(table);
+    return rows;
+  }
+  function buildGrid(table) {
+    const rows = getRowComponents(table);
+    const grid = [];
+    rows.forEach((tr, rIdx) => {
+      grid[rIdx] = grid[rIdx] || [];
+      let col = 0;
+      const cells = tr.components().filter(isCellComp);
+      cells.forEach(cell => {
+        while (grid[rIdx][col]) col++;
+        const rs = getAttrNum(cell, 'rowspan');
+        const cs = getAttrNum(cell, 'colspan');
+        for (let r = 0; r < rs; r++) {
+          grid[rIdx + r] = grid[rIdx + r] || [];
+          for (let c = 0; c < cs; c++) grid[rIdx + r][col + c] = cell;
+        }
+        col += cs;
+      });
+    });
+    return { grid, rows };
+  }
+  function getCellBox(grid, cell) {
+    let r1 = Infinity, c1 = Infinity, r2 = -1, c2 = -1;
+    for (let r = 0; r < grid.length; r++) {
+      const row = grid[r] || [];
+      for (let c = 0; c < row.length; c++) {
+        if (row[c] === cell) { r1 = Math.min(r1, r); c1 = Math.min(c1, c); r2 = Math.max(r2, r); c2 = Math.max(c2, c); }
+      }
+    }
+    return r2 === -1 ? null : { r1, c1, r2, c2 };
+  }
+
+  function mergeCells(cells) {
+    if (!cells || cells.length < 2) { alert('请先按住 Ctrl 点选至少两个单元格'); return; }
+    const table = findTableComponent(cells[0]);
+    if (!table || cells.some(c => findTableComponent(c) !== table)) { alert('只能合并同一个表格内的单元格'); return; }
+    const { grid } = buildGrid(table);
+    const boxes = cells.map(c => getCellBox(grid, c));
+    if (boxes.some(b => !b)) return;
+    const r1 = Math.min(...boxes.map(b => b.r1)), c1 = Math.min(...boxes.map(b => b.c1));
+    const r2 = Math.max(...boxes.map(b => b.r2)), c2 = Math.max(...boxes.map(b => b.c2));
+    const selectedSet = new Set(cells);
+    const covered = new Set();
+    for (let r = r1; r <= r2; r++) {
+      for (let c = c1; c <= c2; c++) {
+        const cell = grid[r] && grid[r][c];
+        if (!cell) { alert('选中区域必须是完整的矩形，无法合并'); return; }
+        covered.add(cell);
+      }
+    }
+    if (covered.size !== selectedSet.size || [...covered].some(c => !selectedSet.has(c))) {
+      alert('选中区域必须恰好构成一个矩形块（不能包含其他单元格）');
+      return;
+    }
+    const primary = grid[r1][c1];
+    covered.forEach(c => {
+      if (c === primary) return;
+      c.components().forEach(k => primary.append(k.toJSON()));
+      c.remove();
+    });
+    setSpan(primary, 'colspan', c2 - c1 + 1);
+    setSpan(primary, 'rowspan', r2 - r1 + 1);
+    clearMultiSelection();
+    editor.select(primary);
+  }
+
+  function splitCell(cell) {
+    const table = findTableComponent(cell);
+    if (!table) return;
+    const { grid, rows } = buildGrid(table);
+    const box = getCellBox(grid, cell);
+    if (!box) return;
+    const { r1, c1, r2, c2 } = box;
+    if (r1 === r2 && c1 === c2) { alert('该单元格未进行合并，无需拆分'); return; }
+    const tagName = cell.get('tagName');
+    setSpan(cell, 'colspan', 1);
+    setSpan(cell, 'rowspan', 1);
+    for (let r = r1; r <= r2; r++) {
+      const tr = rows[r];
+      if (r === r1) {
+        let at = indexInParent(cell) + 1;
+        for (let c = c1 + 1; c <= c2; c++) { tr.components().add({ tagName, content: '&nbsp;' }, { at }); at++; }
+      } else {
+        const existing = tr.components().filter(isCellComp);
+        let at = existing.length;
+        for (let i = 0; i < existing.length; i++) {
+          const b = getCellBox(grid, existing[i]);
+          if (b && b.c1 >= c1) { at = i; break; }
+        }
+        for (let c = c1; c <= c2; c++) { tr.components().add({ tagName, content: '&nbsp;' }, { at }); at++; }
+      }
+    }
+    clearMultiSelection();
+    editor.select(cell);
+  }
+
+  function insertRow(cell, position) {
+    const table = findTableComponent(cell);
+    if (!table) return;
+    const { grid, rows } = buildGrid(table);
+    const box = getCellBox(grid, cell);
+    if (!box) return;
+    const insertAt = position === 'above' ? box.r1 : box.r2 + 1;
+    const totalCols = grid.reduce((m, row) => Math.max(m, (row || []).length), 0);
+    const newCells = [];
+    for (let c = 0; c < totalCols;) {
+      const above = insertAt > 0 ? (grid[insertAt - 1] || [])[c] : null;
+      const below = insertAt < grid.length ? (grid[insertAt] || [])[c] : null;
+      if (above && below && above === below) {
+        setSpan(above, 'rowspan', getAttrNum(above, 'rowspan') + 1);
+        const b = getCellBox(grid, above);
+        c = b.c2 + 1;
+        continue;
+      }
+      newCells.push({ tagName: 'td', content: '&nbsp;' });
+      c++;
+    }
+    const refTr = rows[insertAt];
+    let parentComp, at;
+    if (refTr) { parentComp = refTr.parent(); at = indexInParent(refTr); }
+    else { const lastTr = rows[rows.length - 1]; parentComp = lastTr.parent(); at = parentComp.components().length; }
+    parentComp.components().add({ tagName: 'tr', components: newCells }, { at });
+    clearMultiSelection();
+  }
+
+  function insertColumn(cell, position) {
+    const table = findTableComponent(cell);
+    if (!table) return;
+    const { grid, rows } = buildGrid(table);
+    const box = getCellBox(grid, cell);
+    if (!box) return;
+    const insertAt = position === 'left' ? box.c1 : box.c2 + 1;
+    const extended = new Set();
+    rows.forEach((tr, r) => {
+      const rowArr = grid[r] || [];
+      const left = insertAt > 0 ? rowArr[insertAt - 1] : null;
+      const right = rowArr[insertAt];
+      if (left && right && left === right) {
+        if (!extended.has(left)) { setSpan(left, 'colspan', getAttrNum(left, 'colspan') + 1); extended.add(left); }
+        return;
+      }
+      const existing = tr.components().filter(isCellComp);
+      let at = existing.length;
+      for (let i = 0; i < existing.length; i++) {
+        const b = getCellBox(grid, existing[i]);
+        if (b && b.c1 >= insertAt) { at = i; break; }
+      }
+      const tag = (existing[0] && existing[0].get('tagName')) || 'td';
+      tr.components().add({ tagName: tag, content: '&nbsp;' }, { at });
+    });
+    clearMultiSelection();
+  }
+
+  function deleteRow(cell) {
+    const table = findTableComponent(cell);
+    if (!table) return;
+    const { grid, rows } = buildGrid(table);
+    if (rows.length <= 1) { alert('至少保留一行'); return; }
+    const box = getCellBox(grid, cell);
+    if (!box) return;
+    const rowIndex = box.r1;
+    const tr = rows[rowIndex];
+    const rowArr = grid[rowIndex] || [];
+    const processed = new Set();
+    for (let c = 0; c < rowArr.length; c++) {
+      const cComp = rowArr[c];
+      if (!cComp || processed.has(cComp)) continue;
+      processed.add(cComp);
+      const b = getCellBox(grid, cComp);
+      if (b.r1 < rowIndex) {
+        setSpan(cComp, 'rowspan', Math.max(1, getAttrNum(cComp, 'rowspan') - 1));
+      } else if (b.r1 === rowIndex && b.r2 > rowIndex) {
+        const nextTr = rows[rowIndex + 1];
+        const clone = cComp.clone();
+        setSpan(clone, 'rowspan', Math.max(1, getAttrNum(cComp, 'rowspan') - 1));
+        const existing = nextTr.components().filter(isCellComp);
+        let at = existing.length;
+        for (let i = 0; i < existing.length; i++) {
+          const bb = getCellBox(grid, existing[i]);
+          if (bb && bb.c1 >= b.c1) { at = i; break; }
+        }
+        nextTr.components().add(clone, { at });
+      }
+    }
+    tr.remove();
+    clearMultiSelection();
+  }
+
+  function deleteColumn(cell) {
+    const table = findTableComponent(cell);
+    if (!table) return;
+    const { grid, rows } = buildGrid(table);
+    const box = getCellBox(grid, cell);
+    if (!box) return;
+    const totalCols = grid.reduce((m, row) => Math.max(m, (row || []).length), 0);
+    if (totalCols <= 1) { alert('至少保留一列'); return; }
+    const colIndex = box.c1;
+    const processed = new Set();
+    rows.forEach((tr, r) => {
+      const cComp = (grid[r] || [])[colIndex];
+      if (!cComp || processed.has(cComp)) return;
+      processed.add(cComp);
+      const b = getCellBox(grid, cComp);
+      if (b.c1 === b.c2) cComp.remove();
+      else setSpan(cComp, 'colspan', Math.max(1, getAttrNum(cComp, 'colspan') - 1));
+    });
+    clearMultiSelection();
+  }
+
+  function insertNestedTable(cell) {
+    cell.append({
+      tagName: 'table',
+      attributes: { style: 'width:100%;border-collapse:collapse;margin-top:6px;', border: '1' },
+      components: [{
+        tagName: 'tbody',
+        components: [
+          { tagName: 'tr', components: [{ tagName: 'td', content: '内嵌1' }, { tagName: 'td', content: '内嵌2' }] },
+          { tagName: 'tr', components: [{ tagName: 'td', content: '内嵌3' }, { tagName: 'td', content: '内嵌4' }] },
+        ],
+      }],
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // 单元格多选（Ctrl+点击）与右侧表格工具面板
+  // ------------------------------------------------------------------
+  let multiSelected = [];
+  let ctrlDown = false;
+  let currentCell = null;
+
+  function attachCtrlListeners(doc) {
+    doc.addEventListener('keydown', e => { if (e.key === 'Control') ctrlDown = true; });
+    doc.addEventListener('keyup', e => { if (e.key === 'Control') ctrlDown = false; });
+  }
+  attachCtrlListeners(document);
+
+  function clearMultiSelection() {
+    multiSelected.forEach(c => { try { c.removeClass('gjs-cell-multiselected'); } catch (e) {} });
+    multiSelected = [];
+    updateMultiSelectUI();
+  }
+  function toggleMultiSelect(cell) {
+    const idx = multiSelected.indexOf(cell);
+    if (idx >= 0) { multiSelected.splice(idx, 1); cell.removeClass('gjs-cell-multiselected'); }
+    else { multiSelected.push(cell); cell.addClass('gjs-cell-multiselected'); }
+    updateMultiSelectUI();
+  }
+  function updateMultiSelectUI() {
+    const info = document.getElementById('multiSelectInfo');
+    info.textContent = multiSelected.length
+      ? `已选中 ${multiSelected.length} 个单元格（按住 Ctrl 继续点选，选好后点击"合并选中单元格"）`
+      : '未选择合并目标（按住 Ctrl 并点击多个单元格可多选）';
+    document.getElementById('btnMergeCells').disabled = multiSelected.length < 2;
+  }
+  function updateTablePanel(component) {
+    const tag = component ? (component.get('tagName') || '').toLowerCase() : '';
+    const isCell = tag === 'td' || tag === 'th';
+    document.getElementById('tableToolsBody').style.display = isCell ? 'block' : 'none';
+    document.getElementById('tableEmptyHint').style.display = isCell ? 'none' : 'block';
+    currentCell = isCell ? component : null;
+  }
+
+  function setEditorEmpty(isEmpty) {
+    document.getElementById('editor-container').classList.toggle('editor-empty', isEmpty);
+    editor.refresh();
+  }
+
+  function hasCanvasContent() {
+    return editor.getWrapper().components().length > 0 || Boolean(importedDocumentCss);
+  }
+
+  let importedDocumentCss = '';
+  function splitImportedCss(cssText) {
+    let baseCss = '';
+    let responsiveCss = '';
+    let cursor = 0;
+    while (cursor < cssText.length) {
+      const mediaStart = cssText.indexOf('@media', cursor);
+      if (mediaStart < 0) {
+        baseCss += cssText.slice(cursor);
+        break;
+      }
+      baseCss += cssText.slice(cursor, mediaStart);
+      const blockStart = cssText.indexOf('{', mediaStart);
+      if (blockStart < 0) {
+        baseCss += cssText.slice(mediaStart);
+        break;
+      }
+      let depth = 0;
+      let blockEnd = blockStart;
+      let quote = '';
+      for (; blockEnd < cssText.length; blockEnd++) {
+        const char = cssText[blockEnd];
+        if (quote) {
+          if (char === quote && cssText[blockEnd - 1] !== '\\') quote = '';
+          continue;
+        }
+        if (char === '"' || char === "'") { quote = char; continue; }
+        if (char === '{') depth++;
+        if (char === '}') {
+          depth--;
+          if (depth === 0) { blockEnd++; break; }
+        }
+      }
+      responsiveCss += cssText.slice(mediaStart, blockEnd) + '\n';
+      cursor = blockEnd;
+    }
+    return { baseCss, responsiveCss };
+  }
+
+  function applyImportedResponsiveCss() {
+    const doc = editor.Canvas.getDocument();
+    if (!doc) return;
+    const existing = doc.getElementById('imported-document-css');
+    if (existing) existing.remove();
+    if (!importedDocumentCss) return;
+    const style = doc.createElement('style');
+    style.id = 'imported-document-css';
+    style.textContent = importedDocumentCss;
+    doc.head.appendChild(style);
+  }
+
+  function restoreBaseFlowRule(cssText) {
+    const match = cssText.match(/\.forFlow\s*\{[^}]*\}/i);
+    if (!match) return;
+    const declarations = {};
+    match[0].slice(match[0].indexOf('{') + 1, -1).split(';').forEach(declaration => {
+      const separator = declaration.indexOf(':');
+      if (separator < 0) return;
+      const property = declaration.slice(0, separator).trim();
+      const value = declaration.slice(separator + 1).trim();
+      if (property && value) declarations[property] = value;
+    });
+    editor.Css.setRule('.forFlow', declarations);
+  }
+
+  function importHtmlFile(file) {
+    if (!file) return;
+    if (hasCanvasContent() && !confirm('导入将替换当前画布内容，是否继续？')) return;
+    if (!/\.html?$/i.test(file.name)) {
+      alert('请拖入 HTML 文件（.html 或 .htm）');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || '');
+      let bodyHtml = text;
+      let cssText = '';
+      try {
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        if (doc.body && doc.body.innerHTML.trim()) bodyHtml = doc.body.innerHTML;
+        cssText = Array.from(doc.querySelectorAll('style')).map(style => {
+          const text = style.textContent || '';
+          const media = style.getAttribute('media');
+          return media ? `@media ${media}{${text}}` : text;
+        }).join('\n');
+      } catch (err) {
+        bodyHtml = text;
+      }
+      clearMultiSelection();
+      editor.setComponents(bodyHtml);
+      setEditorEmpty(!bodyHtml.trim());
+      const importedCss = splitImportedCss(cssText);
+      if (importedCss.baseCss) editor.setStyle(importedCss.baseCss);
+      restoreBaseFlowRule(cssText);
+      importedDocumentCss = cssText;
+      applyImportedResponsiveCss();
+      editor.UndoManager.clear();
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  const editorContainer = document.getElementById('editor-container');
+  editorContainer.addEventListener('dragover', event => {
+    if (!editorContainer.classList.contains('editor-empty')) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    editorContainer.classList.add('editor-dragover');
+  });
+  editorContainer.addEventListener('dragleave', event => {
+    if (event.target === editorContainer) editorContainer.classList.remove('editor-dragover');
+  });
+  editorContainer.addEventListener('drop', event => {
+    if (!editorContainer.classList.contains('editor-empty')) return;
+    event.preventDefault();
+    editorContainer.classList.remove('editor-dragover');
+    importHtmlFile(event.dataTransfer.files[0]);
+  });
+
+  editor.on('component:add', () => setEditorEmpty(false));
+  editor.on('component:remove', () => {
+    setTimeout(() => setEditorEmpty(editor.getWrapper().components().length === 0), 0);
+  });
+
+  function setBlocksOpen(open) {
+    const app = document.getElementById('app');
+    const button = document.getElementById('btnToggleBlocks');
+    app.classList.toggle('blocks-open', open);
+    button.setAttribute('aria-expanded', String(open));
+    button.setAttribute('aria-label', open ? '隐藏组件库' : '显示组件库');
+    button.title = open ? '隐藏组件库' : '显示组件库';
+    activateTab(open ? 'layers' : 'styles');
+    editor.refresh();
+  }
+
+  editor.on('component:selected', component => {
+    const prevCell = currentCell;
+    setBlocksOpen(false);
+    activateTab('styles');
+    updateTablePanel(component);
+    if (!component) { clearMultiSelection(); return; }
+    const tag = (component.get('tagName') || '').toLowerCase();
+    if (tag === 'td' || tag === 'th') {
+      if (ctrlDown) {
+        // 首次 Ctrl+点击时，把之前已单选的单元格一并纳入多选集合
+        if (multiSelected.length === 0 && prevCell && prevCell !== component) {
+          multiSelected.push(prevCell);
+          prevCell.addClass('gjs-cell-multiselected');
+        }
+        toggleMultiSelect(component);
+      } else {
+        clearMultiSelection();
+      }
+    } else {
+      clearMultiSelection();
+    }
+  });
+
+  editor.on('load', () => {
+    const doc = editor.Canvas.getDocument();
+    const style = doc.createElement('style');
+    style.innerHTML = '.gjs-cell-multiselected{outline:2px dashed #1976d2 !important;outline-offset:-2px;}';
+    doc.head.appendChild(style);
+    attachCtrlListeners(doc);
+    // 自定义布局下画布尺寸在初始化时可能测量过早，load 后重新计算填满容器
+    editor.refresh();
+    setTimeout(() => editor.refresh(), 0);
+  });
+  window.addEventListener('resize', () => editor.refresh());
+
+  document.getElementById('btnRowAbove').onclick = () => currentCell && insertRow(currentCell, 'above');
+  document.getElementById('btnRowBelow').onclick = () => currentCell && insertRow(currentCell, 'below');
+  document.getElementById('btnDeleteRow').onclick = () => currentCell && deleteRow(currentCell);
+  document.getElementById('btnColLeft').onclick = () => currentCell && insertColumn(currentCell, 'left');
+  document.getElementById('btnColRight').onclick = () => currentCell && insertColumn(currentCell, 'right');
+  document.getElementById('btnDeleteCol').onclick = () => currentCell && deleteColumn(currentCell);
+  document.getElementById('btnMergeCells').onclick = () => mergeCells(multiSelected.slice());
+  document.getElementById('btnSplitCell').onclick = () => currentCell && splitCell(currentCell);
+  document.getElementById('btnClearSelect').onclick = () => clearMultiSelection();
+  document.getElementById('btnInsertNestedTable').onclick = () => currentCell && insertNestedTable(currentCell);
+
+  // ------------------------------------------------------------------
+  // 右侧面板 Tab 切换
+  // ------------------------------------------------------------------
+  function activateTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.toggle('active', pane.id === 'pane-' + tabName));
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab)));
+  document.getElementById('btnToggleBlocks').onclick = () => {
+    setBlocksOpen(!document.getElementById('app').classList.contains('blocks-open'));
+  };
+
+  // ------------------------------------------------------------------
+  // 顶部工具栏：新建 / 导入 / 导出 / 预览 / 查看代码 / 撤销重做 / 设备
+  // ------------------------------------------------------------------
+  function buildFullDocument() {
+    clearMultiSelection();
+    const html = editor.getHtml();
+    const css = editor.getCss();
+    return `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<title>导出页面</title>\n<style>${css}\n${importedDocumentCss}</style>\n</head>\n${html}\n</html>`;
+  }
+
+  document.getElementById('btnNew').onclick = () => {
+    if (hasCanvasContent() && !confirm('新建将清空当前画布内容，是否继续？')) return;
+    clearMultiSelection();
+    editor.setComponents([]);
+    setEditorEmpty(false);
+    setTimeout(() => setEditorEmpty(false), 0);
+    importedDocumentCss = '';
+    applyImportedResponsiveCss();
+    editor.setStyle('');
+    editor.UndoManager.clear();
+    hasUnexportedChanges = false;
+  };
+
+  document.getElementById('btnImport').onclick = () => document.getElementById('importFileInput').click();
+  document.getElementById('importFileInput').onchange = e => {
+    importHtmlFile(e.target.files[0]);
+    e.target.value = '';
+  };
+
+  document.getElementById('btnExport').onclick = () => {
+    const blob = new Blob([buildFullDocument()], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `export-${Date.now()}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    hasUnexportedChanges = false;
+  };
+
+  document.getElementById('btnPreview').onclick = () => {
+    const win = window.open('', '_blank');
+    if (!win) { alert('浏览器阻止了弹出窗口，请允许弹窗后重试'); return; }
+    win.document.open();
+    win.document.write(buildFullDocument());
+    win.document.close();
+  };
+
+  document.getElementById('btnViewCode').onclick = () => {
+    clearMultiSelection();
+    const html = editor.getHtml();
+    const css = editor.getCss();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-view';
+    wrapper.innerHTML = `
+      <h4>HTML</h4>
+      <textarea readonly id="codeHtmlArea"></textarea>
+      <h4>CSS</h4>
+      <textarea readonly id="codeCssArea"></textarea>
+      <button class="tb-btn" id="btnCopyCode" style="color:#1e2430;">复制 HTML+CSS</button>
+    `;
+    editor.Modal.open({ title: '查看代码', content: wrapper });
+    wrapper.querySelector('#codeHtmlArea').value = html;
+    wrapper.querySelector('#codeCssArea').value = css;
+    wrapper.querySelector('#btnCopyCode').onclick = () => {
+      navigator.clipboard.writeText(buildFullDocument()).then(() => alert('已复制到剪贴板'));
+    };
+  };
+
+  document.getElementById('btnUndo').onclick = () => editor.UndoManager.undo();
+  document.getElementById('btnRedo').onclick = () => editor.UndoManager.redo();
+  document.getElementById('deviceSelect').onchange = e => editor.setDevice(e.target.value);
+  editor.on('change:device', () => {
+    document.getElementById('deviceSelect').value = editor.getDevice();
+  });
+
+  setEditorEmpty(true);
+
+})();
+</script>
+</body>
+</html>
